@@ -18,6 +18,7 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 use Magento\Framework\Exception\StateException;
+use Magento\Store\Model\StoreManagerInterface;
 use Exception;
 
 class CreateProductPatch implements DataPatchInterface
@@ -53,6 +54,11 @@ class CreateProductPatch implements DataPatchInterface
     protected CategoryCollectionFactory $categoryCollectionFactory;
 
     /**
+     * @var StoreManagerInterface
+     */
+    protected StoreManagerInterface $storeManager;
+
+    /**
      * @var array
      */
     protected array $sourceItems = [];
@@ -65,6 +71,7 @@ class CreateProductPatch implements DataPatchInterface
      * @param State $appState
      * @param EavSetup $eavSetup
      * @param CategoryLinkManagementInterface $categoryLink
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         ProductInterfaceFactory $productInterfaceFactory,
@@ -72,7 +79,8 @@ class CreateProductPatch implements DataPatchInterface
         State $appState,
         EavSetup $eavSetup,
         CategoryLinkManagementInterface $categoryLink,
-        CategoryCollectionFactory $categoryCollectionFactory
+        CategoryCollectionFactory $categoryCollectionFactory,
+        StoreManagerInterface $storeManager
     ) {
         $this->appState = $appState;
         $this->productInterfaceFactory = $productInterfaceFactory;
@@ -80,6 +88,7 @@ class CreateProductPatch implements DataPatchInterface
         $this->eavSetup = $eavSetup;
         $this->categoryLink = $categoryLink;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->storeManager = $storeManager;
     }
 
     /**
