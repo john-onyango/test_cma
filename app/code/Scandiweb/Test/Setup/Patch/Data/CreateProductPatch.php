@@ -160,3 +160,4 @@ class CreateProductPatch implements DataPatchInterface
     }
 
 }
+
