@@ -53,6 +53,11 @@ class CreateProductPatch implements DataPatchInterface
     protected CategoryCollectionFactory $categoryCollectionFactory;
 
     /**
+     * @var array
+     */
+    protected array $sourceItems = [];
+
+    /**
      * Migration patch constructor.
      *
      * @param ProductInterfaceFactory $productInterfaceFactory
@@ -76,6 +81,7 @@ class CreateProductPatch implements DataPatchInterface
         $this->categoryLink = $categoryLink;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
     }
+
     /**
      * @return array|string[]
      */
@@ -103,22 +109,37 @@ class CreateProductPatch implements DataPatchInterface
     public function execute(): void
     {
         $product = $this->productInterfaceFactory->create();
+
         if ($product->getIdBySku('nike-air-max-90')) {
             return;
         }
+        $attributeSetId = $this->eavSetup->getAttributeSetId(Product::ENTITY, 'Default');
+        $websiteIDs = [$this->storeManager->getStore()->getWebsiteId()];
         $product->setTypeId(Type::TYPE_SIMPLE)
+            ->setWebsiteIds($websiteIDs)
+            ->setAttributeSetId($attributeSetId)
+            ->setUrlKey('nike-air-max-90')
             ->setName("nike-air-max-90")
             ->setSku("nike-air-max-90")
-            ->setPrice(1.00)
+            ->setPrice(10.00)
             ->setVisibility(Visibility::VISIBILITY_BOTH)
             ->setStatus(Status::STATUS_ENABLED)
             ->setStockData(['use_config_manage_stock' => 1, 'is_qty_decimal' => 0, 'is_in_stock' => 1]);
+        $product = $this->productRepository->save($product);
+
+        $sourceItem = $this->sourceItemFactory->create();
+        $sourceItem->setSourceCode('default');
+        $sourceItem->setQuantity(100);
+        $sourceItem->setSku($product->getSku());
+        $sourceItem->setStatus(SourceItemInterface::STATUS_IN_STOCK);
+        $this->sourceItems[] = $sourceItem;
+        $this->sourceItemsSaveInterface->execute($this->sourceItems);
+
         $categoryTitles = ['Men'];
         $categoryIds = $this->categoryCollectionFactory->create()
             ->addAttributeToFilter('name', ['in' => $categoryTitles])
             ->getAllIds();
         $this->categoryLink->assignProductToCategories($product->getSku(), $categoryIds);
-        $product = $this->productRepository->save($product);
     }
 
     /**
@@ -128,4 +149,5 @@ class CreateProductPatch implements DataPatchInterface
     {
         return [];
     }
+
 }
