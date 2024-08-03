@@ -6,6 +6,10 @@ namespace Scandiweb\Test\Setup\Patch\Data;
 
 use Magento\Catalog\Api\CategoryLinkManagementInterface;
 use Magento\Catalog\Api\Data\ProductInterfaceFactory;
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
+use Magento\InventoryApi\Api\SourceItemsSaveInterface;
+use Magento\InventoryApi\Api\Data\SourceItemInterfaceFactory as SourceItemFactory;
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\Product\Attribute\Source\Status;
@@ -59,6 +63,16 @@ class CreateProductPatch implements DataPatchInterface
     protected StoreManagerInterface $storeManager;
 
     /**
+     * @var SourceItemsSaveInterface
+     */
+    protected SourceItemsSaveInterface $sourceItemsSaveInterface;
+
+    /**
+     * @var SourceItemFactory
+     */
+    protected SourceItemFactory $sourceItemFactory;
+
+    /**
      * @var array
      */
     protected array $sourceItems = [];
@@ -72,6 +86,9 @@ class CreateProductPatch implements DataPatchInterface
      * @param EavSetup $eavSetup
      * @param CategoryLinkManagementInterface $categoryLink
      * @param StoreManagerInterface $storeManager
+     * @param SourceItemsSaveInterface $sourceItemsSaveInterface
+     * @param SourceItemFactory $sourceItemFactory
+     * @param CategoryCollectionFactory $categoryCollectionFactory
      */
     public function __construct(
         ProductInterfaceFactory $productInterfaceFactory,
@@ -80,7 +97,9 @@ class CreateProductPatch implements DataPatchInterface
         EavSetup $eavSetup,
         CategoryLinkManagementInterface $categoryLink,
         CategoryCollectionFactory $categoryCollectionFactory,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        SourceItemFactory $sourceItemFactory,
+        SourceItemsSaveInterface $sourceItemsSaveInterface,
     ) {
         $this->appState = $appState;
         $this->productInterfaceFactory = $productInterfaceFactory;
@@ -89,6 +108,8 @@ class CreateProductPatch implements DataPatchInterface
         $this->categoryLink = $categoryLink;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->storeManager = $storeManager;
+        $this->sourceItemFactory = $sourceItemFactory;
+        $this->sourceItemsSaveInterface = $sourceItemsSaveInterface;
     }
 
     /**
@@ -122,6 +143,7 @@ class CreateProductPatch implements DataPatchInterface
         if ($product->getIdBySku('nike-air-max-90')) {
             return;
         }
+
         $attributeSetId = $this->eavSetup->getAttributeSetId(Product::ENTITY, 'Default');
         $websiteIDs = [$this->storeManager->getStore()->getWebsiteId()];
         $product->setTypeId(Type::TYPE_SIMPLE)
@@ -158,6 +180,4 @@ class CreateProductPatch implements DataPatchInterface
     {
         return [];
     }
-
 }
-
