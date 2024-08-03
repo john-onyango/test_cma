@@ -9,4 +9,3 @@ ComponentRegistrar::register(
     'Scandiweb_Test',
     __DIR__
 );
-
